@@ -6,17 +6,15 @@
 * Professora: Silvana Rossetto
 */
 
+#include <limits.h>
+#include <pthread.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <limits.h>
-#include <pthread.h>
+#include "constants.h"
 #include "util.h"
 #include "timer.h"
-
-#define ASCII_SIZE 128
-#define MAXIMUM_STR_LINE_READABLE INT_MAX
 
 //variáveis globais
 int nthreads;
@@ -27,30 +25,6 @@ FILE *infile;
 * ascii do caracter estará sua frequencia
 */
 int ascii_freq_global[ASCII_SIZE];
-
-/*
-* inicializa tabela de frequencia de caracteres
-* passada como argumento
-*/
-void inicializa_ascii_freq(int *ascii_freq){
-	int i;
-	for(i=0; i<ASCII_SIZE; i++) {
-		ascii_freq[i] = 0;
-	}
-}
-
-
-/*
-* incrementa em cada caractere da tabela ascii_frew
-* usando os caracteres da string de line
-*/
-void ocorrencias_caracteres_linha(int *ascii_freq, char *line){
-	int i, ascii_eq;
-	for(i=0; i<strlen(line); i++){
-			ascii_eq = (int) line[i];
-			ascii_freq[ascii_eq]++;
-		}
-}
 
 void ocorrencias_caracteres_arquivo(FILE *f, int *ascii_freq){
 	char line[MAXIMUM_STR_LINE_READABLE];
@@ -101,7 +75,7 @@ int main(int argc, char const *argv[])
 		//alguma outra coisa para juntar resulado, se for necessário
 	}
 	else {
-		ocorrencias_caracteres(infile, ascii_freq_global);
+		ocorrencias_caracteres_arquivo(infile, ascii_freq_global);
 	}
 
 	fclose(infile);

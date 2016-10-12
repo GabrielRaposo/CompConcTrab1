@@ -1,2 +1,2 @@
-install: main.c timer.h
-	gcc main.c -lpthread -Wall -o huffman.out
+install: main.c timer.h util.h
+	gcc util.c main.c -lpthread -ggdb3 -Wall -o huffman.out
