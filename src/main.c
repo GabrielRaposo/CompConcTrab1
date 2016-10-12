@@ -1,5 +1,6 @@
 /*
-* Autores: Matheus Graciano 113093372 <graciano.dev@gmail.com>, Gabriel Raposo 123dre-aqui123 <email>
+* Autores: Matheus Graciano 113093372 <graciano.dev@gmail.com>,
+* 		   Gabriel Raposo 123dre-aqui123 <email>
 * Universidade Federal do Rio de Janeiro
 * Departamento de Ciência da Computação
 * Computação Concorrente - trabalho 1
@@ -27,7 +28,6 @@ int ascii_freq_global[ASCII_SIZE];
 
 void ocorrencias_caracteres_arquivo(FILE *f, int *ascii_freq){
 	char line[MAXIMUM_STR_LINE_READABLE];
-	printf("oi\n");
 	while (fgets(line, sizeof(line), f) != NULL){
 		ocorrencias_caracteres_linha(ascii_freq_global, line);
 	}
@@ -62,12 +62,12 @@ int main(int argc, char const *argv[])
 	}
 
 	//Lendo arquivos de entrada e saída
-	printf("\n....Abrindo arquivo: %s\n", infile_name);
+	printf("\n....Acessando arquivo: %s\n", infile_name);
 	infile = fopen(infile_name, "r");
 	if (infile == NULL) {
 		error("Não foi possível abrir o arquivo."); 
 	}
-	printf("\nAbrindo arquivo: %s\n", outfile_name);
+	printf("\nAcessando arquivo: %s\n", outfile_name);
 	outfile = fopen(outfile_name, "w");
 	if (outfile == NULL) {
 		error("Não foi possível abrir o arquivo."); 
@@ -85,11 +85,11 @@ int main(int argc, char const *argv[])
 		//alguma outra coisa para juntar resulado, se for necessário
 	}
 	else {
-		printf("oi\n");
 		ocorrencias_caracteres_arquivo(infile, ascii_freq_global);
 	}
 
 	escreve_arquivo_saida(ascii_freq_global, outfile);
+	printf("Frequência de caracteres no arquivo: %s\n", outfile_name);
 	fclose(infile);
 	fclose(outfile);
 	return 0;

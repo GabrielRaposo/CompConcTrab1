@@ -8,3 +8,4 @@ clean:
 test: huffman.out
 	make install
 	./huffman.out dados/ricardo_reis.txt out.csv
+	cat out.csv

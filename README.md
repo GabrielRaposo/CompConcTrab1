@@ -2,16 +2,32 @@ Trabalho: primeira etapa algoritmo de Huffman
 =============================================
 
 ## Sobre
-* Autores: Matheus Graciano 113093372 <graciano.dev@gmail.com>, Gabriel Raposo 123dre-aqui123 <email@whatever.com>
+
+* Autores:
+	* Matheus Graciano Bittencourt Andrade 113093372 <graciano.dev@gmail.com>
+	* Gabriel Raposo da Silva Sauro 123dre-aqui123 <email@whatever.com>
 * Universidade Federal do Rio de Janeiro
 * Departamento de Ciência da Computação
 * Computação Concorrente - trabalho 1
 * Professora: Silvana Rossetto
 
-## Para testar
-* `make install`
-* `./huffman.out dados/ricardo_reis.txt saida.csv` // ou qualquer outro arquivo de exemplo
+## Instruções
 
+* `make test` para testar a aplicação
+* `make install` para compilar para o arquivo: `huffman.out`
+* `./huffman.out dados/ricardo_reis.txt saida.csv` ou qualquer outro arquivo para executar
+* `make clean` para remover os arquivos .out e .csv que estiverem ocupando espaço whatever
+
+## Pendências
+
+* nome todo do Raposo ali em cima
+* rever a constante `MAXIMUM_STR_LINE_READABLE` em `src/constants.h` para algum número mais coerente (havia sido tentado antes o `INT_MAX` antes, mas deu segfault, então coloquei 400 porque sim)
+* usar tomadas de tempo
+* gerar arquivos grandes para testar se está tudo ok
+* fazer a parte concorrente
+* refactors e avaliação do código
+* fazer relatório
+ 
 ```
 _____________¶¶¶¶¶¶¶
 ___________¶¶¶______¶¶¶

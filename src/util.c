@@ -18,21 +18,18 @@ void inicializa_ascii_freq(int *ascii_freq){
 
 void ocorrencias_caracteres_linha(int *ascii_freq, char *line){
 	int i, ascii_eq;
-	printf("%s\n", line);
 	for(i=0; i<strlen(line)-1; i++){
-		printf("i=%d, c=%c", i, line[i]);
 		ascii_eq = (int) line[i];
-		if(MIN_ASCII_USING>=ascii_eq || ascii_eq<=MAX_ASCII_USING){
-			ascii_freq[ascii_eq]++;	
+		if(ascii_eq>=MIN_ASCII_USING && ascii_eq<=MAX_ASCII_USING){
+			ascii_freq[ascii_eq]++;
 		}
 	}
-	printf("ae porra\n");
 }
 
 void escreve_arquivo_saida(int *ascii_freq, FILE *f) {
 	int i;
 	fprintf(f, "Caractere, Qtde\n");
 	for(i=0; i<ASCII_SIZE; i++){
-		fprintf(f, "%c, %d", i, ascii_freq[i]);
+		if(ascii_freq[i]>0) fprintf(f, "%c, %d\n", i, ascii_freq[i]);
 	}
 }
