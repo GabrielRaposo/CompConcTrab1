@@ -1,5 +1,14 @@
-eae coe
+Trabalho: primeira etapa algoritmo de Huffman
+=============================================
 
+## Sobre
+* Autores: Matheus Graciano 113093372 <graciano.dev@gmail.com>, Gabriel Raposo 123dre-aqui123 <email@whatever.com>
+* Universidade Federal do Rio de Janeiro
+* Departamento de Ciência da Computação
+* Computação Concorrente - trabalho 1
+* Professora: Silvana Rossetto
+
+```
 _____________¶¶¶¶¶¶¶
 ___________¶¶¶______¶¶¶
 _________¶¶¶___________¶¶
@@ -49,3 +58,4 @@ _____________¶¶__¶¶____¶¶_________¶¶
 ______________¶¶_¶¶_¶__¶_______¶¶¶¶
 _______________¶¶¶__¶¶¶¶¶__¶¶¶¶¶
 _________________¶¶¶¶¶__¶¶¶¶¶
+```
