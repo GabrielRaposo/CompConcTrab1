@@ -1,5 +1,0 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
-#define ASCII_SIZE 128
-#define MAXIMUM_STR_LINE_READABLE INT_MAX
-#endif

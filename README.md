@@ -8,6 +8,10 @@ Trabalho: primeira etapa algoritmo de Huffman
 * Computação Concorrente - trabalho 1
 * Professora: Silvana Rossetto
 
+## Para testar
+* `make install`
+* `./huffman.out dados/ricardo_reis.txt saida.csv` // ou qualquer outro arquivo de exemplo
+
 ```
 _____________¶¶¶¶¶¶¶
 ___________¶¶¶______¶¶¶

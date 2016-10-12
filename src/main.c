@@ -6,7 +6,6 @@
 * Professora: Silvana Rossetto
 */
 
-#include <limits.h>
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -28,6 +27,7 @@ int ascii_freq_global[ASCII_SIZE];
 
 void ocorrencias_caracteres_arquivo(FILE *f, int *ascii_freq){
 	char line[MAXIMUM_STR_LINE_READABLE];
+	printf("oi\n");
 	while (fgets(line, sizeof(line), f) != NULL){
 		ocorrencias_caracteres_linha(ascii_freq_global, line);
 	}
@@ -38,6 +38,7 @@ int main(int argc, char const *argv[])
 	FILE *outfile;
 	char *infile_name, *outfile_name;
 	bool use_threads = false;
+	int size;
 
 	//avaliando argumentos passados
 	if(argc <3){
@@ -45,8 +46,15 @@ int main(int argc, char const *argv[])
 			argv[0]);
 		error(NULL);
 	}
-	strcpy(infile_name, argv[1]);
-	strcpy(outfile_name, argv[2]);
+
+	size = strlen(argv[1])+1;
+	infile_name = (char*) malloc(size * sizeof(char));
+
+	size = strlen(argv[2])+1;
+	outfile_name = (char*) malloc(size 	* sizeof(char));
+	
+	strncpy(infile_name,  argv[1], strlen(argv[1]));
+	strncpy(outfile_name, argv[2], strlen(argv[2]));
 
 	use_threads = (argc >3);
 	if(use_threads){
@@ -54,13 +62,15 @@ int main(int argc, char const *argv[])
 	}
 
 	//Lendo arquivos de entrada e saída
+	printf("\n....Abrindo arquivo: %s\n", infile_name);
 	infile = fopen(infile_name, "r");
 	if (infile == NULL) {
-		error("Unable to open file."); 
+		error("Não foi possível abrir o arquivo."); 
 	}
+	printf("\nAbrindo arquivo: %s\n", outfile_name);
 	outfile = fopen(outfile_name, "w");
 	if (outfile == NULL) {
-		error("Unable to open file.");
+		error("Não foi possível abrir o arquivo."); 
 	}
 
 	inicializa_ascii_freq(ascii_freq_global);
@@ -75,9 +85,11 @@ int main(int argc, char const *argv[])
 		//alguma outra coisa para juntar resulado, se for necessário
 	}
 	else {
+		printf("oi\n");
 		ocorrencias_caracteres_arquivo(infile, ascii_freq_global);
 	}
 
+	escreve_arquivo_saida(ascii_freq_global, outfile);
 	fclose(infile);
 	fclose(outfile);
 	return 0;
