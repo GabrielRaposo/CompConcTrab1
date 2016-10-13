@@ -5,7 +5,7 @@ Trabalho: primeira etapa algoritmo de Huffman
 
 * Autores:
 	* Matheus Graciano Bittencourt Andrade 113093372 <graciano.dev@gmail.com>
-	* Gabriel Raposo da Silva Sauro 123dre-aqui123 <email@whatever.com>
+	* Gabriel Silva Raposo 115117041 <gabriel.s.raposo@gmail.com>
 * Universidade Federal do Rio de Janeiro
 * Departamento de Ciência da Computação
 * Computação Concorrente - trabalho 1
@@ -20,8 +20,6 @@ Trabalho: primeira etapa algoritmo de Huffman
 
 ## Pendências
 
-* nome todo do Raposo ali em cima
-* rever a constante `MAXIMUM_STR_LINE_READABLE` em `src/constants.h` para algum número mais coerente (havia sido tentado antes o `INT_MAX` antes, mas deu segfault, então coloquei 400 porque sim)
 * usar tomadas de tempo
 * gerar arquivos grandes para testar se está tudo ok
 * fazer a parte concorrente

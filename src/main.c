@@ -1,6 +1,6 @@
 /*
 * Autores: Matheus Graciano 113093372 <graciano.dev@gmail.com>,
-* 		   Gabriel Raposo 123dre-aqui123 <email>
+* 		   Gabriel Silva Raposo 115117041 <gabriel.s.raposo@gmail.com>
 * Universidade Federal do Rio de Janeiro
 * Departamento de Ciência da Computação
 * Computação Concorrente - trabalho 1
@@ -21,15 +21,20 @@ int nthreads;
 FILE *infile;
 
 /*
-* tabela 'hash' no índice referente ao
+* tabela estilo 'hash' no índice referente ao
 * ascii do caracter estará sua frequencia
 */
 int ascii_freq_global[ASCII_SIZE];
 
+/*
+* versão concorrente da primeira etapa do algoritmo de huffman,
+* conta a frequência dos caracteres do arquivo f e armazena
+* na tabela ascii_freq
+*/
 void ocorrencias_caracteres_arquivo(FILE *f, int *ascii_freq){
-	char line[MAXIMUM_STR_LINE_READABLE];
-	while (fgets(line, sizeof(line), f) != NULL){
-		ocorrencias_caracteres_linha(ascii_freq_global, line);
+	char c;
+	while ((c = fgetc(f)) != EOF){
+		incrementa_ocorrencias_char(ascii_freq, c);
 	}
 }
 
@@ -56,8 +61,7 @@ int main(int argc, char const *argv[])
 	strncpy(infile_name,  argv[1], strlen(argv[1]));
 	strncpy(outfile_name, argv[2], strlen(argv[2]));
 
-	use_threads = (argc >3);
-	if(use_threads){
+	if(use_threads = (argc > 3)){
 		nthreads=atoi(argv[3]);
 	}
 

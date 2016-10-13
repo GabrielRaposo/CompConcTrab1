@@ -14,10 +14,12 @@ void inicializa_ascii_freq(int *ascii_freq);
 
 
 /*
-* incrementa em cada caractere da tabela ascii_frew
-* usando os caracteres da string de line
+* se o caractere c estiver no universo de caracteres a serem contados,
+* incrementa no índice equivalente de c da tabela ascii_freq
 */
-void ocorrencias_caracteres_linha(int *ascii_freq, char *line);
+void incrementa_ocorrencias_char(int *ascii_freq, char c);
+
+bool in_array(int arr[], int needle, int size);
 
 /*
 * pega a tabela de frequencia de caracteres e escreve

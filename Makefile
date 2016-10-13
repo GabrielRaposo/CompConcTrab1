@@ -5,7 +5,7 @@ clean:
 	rm *.out
 	rm *.csv
 
-test: huffman.out
+test: src/main.c src/constants.h src/timer.h src/util.h
 	make install
 	./huffman.out dados/ricardo_reis.txt out.csv
 	cat out.csv
