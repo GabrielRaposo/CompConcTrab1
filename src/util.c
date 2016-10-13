@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <pthread.h>
 #include <string.h>
 #include "constants.h"
 
@@ -15,11 +16,18 @@ void inicializa_ascii_freq(int *ascii_freq) {
 	for(i=0; i<ASCII_SIZE; i++) ascii_freq[i] = 0;
 }
 
-void incrementa_ocorrencias_char(int *ascii_freq, char c) {
+void incrementa_ocorrencias_char(int *ascii_freq, char c,
+                                 pthread_mutex_t mutex_ascii_freq[]) {
 	int ascii_eq = (int) c; // equivalente da tabela ascii do char c
+	if(ascii_eq>=MIN_ASCII_USING && ascii_eq<=MAX_ASCII_USING) {
+		if(mutex_ascii_freq!=NULL)
+			pthread_mutex_lock(&mutex_ascii_freq[ascii_eq]);
 
-	if(ascii_eq>=MIN_ASCII_USING && ascii_eq<=MAX_ASCII_USING)
 		ascii_freq[ascii_eq]++;
+
+		if(mutex_ascii_freq!=NULL)
+			pthread_mutex_unlock(&mutex_ascii_freq[ascii_eq]);
+	}
 }
 
 bool in_array(int arr[], int needle, int size){
