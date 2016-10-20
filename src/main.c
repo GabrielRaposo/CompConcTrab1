@@ -58,15 +58,22 @@ void insere(char c) {
 	buffer[in] = c;
 	in++;
 	in %= BUFFER_SIZE;
-	pthread_mutex_unlock(&mutex);
-	pthread_cond_signal(&cond_cons);
+	pthread_mutex_unlock(&mutex);	
+	pthread_cond_broadcast(&cond_cons);
 }
 
 char retira (void) {
 	char c;
 	pthread_mutex_lock(&mutex);
 	while(count_buffer == 0) {
+		if (file_ended) {
+			// printf("entrei na condição final da retira\n");
+			pthread_mutex_unlock(&mutex);
+			return BLACKLIST[0]; // retornando um caracter que não será computado.
+		}
+		// printf("loop retira antes do wait count_buffer=%d\n", count_buffer);
 		pthread_cond_wait(&cond_cons, &mutex);
+		// printf("loop retira depois do wait count_buffer=%d\n", count_buffer);
 	}
 	count_buffer--;
 	c = buffer[out];
@@ -74,28 +81,37 @@ char retira (void) {
 	out %= BUFFER_SIZE;
 	pthread_mutex_unlock(&mutex);
 	pthread_cond_signal(&cond_prod);
+	pthread_cond_broadcast(&cond_cons);
 	return c;
 }
 
 void * thread_produtora(void * arg) {
 	char c;
+	printf("thread_produtora começou\n");
 	while(true) {
 		if((c = fgetc(infile))!=EOF)
 			insere(c);
 		else{
 			file_ended = true;
-			 break;
+			pthread_cond_broadcast(&cond_cons);
+			break;
 		}
 	}
+	printf("saindo da thread_produtora \n");
 	pthread_exit(NULL);
 }
 
 void * thread_consumidora(void * arg) {
 	char c;
-	while(!file_ended) {
+	printf("thread_consumidora começou\n");
+	while(true) {
 		c = retira();
 		incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
+		if(file_ended && count_buffer==0){
+			break;
+		}
 	}
+	printf("saindo da thread_consumidora count_buffer: %d \n", count_buffer);
 	pthread_exit(NULL);
 }
 
