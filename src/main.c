@@ -64,7 +64,6 @@ void * thread_conta_char(void * arg){
 		for (i = 0; (i < string_size); ++i)
 		{
 			if( (c = fgetc(infile)) == EOF ){
-				printf("EOF\n");
 				pthread_mutex_lock(&mutex_end);
 				end = true;
 				pthread_mutex_unlock(&mutex_end);
@@ -139,8 +138,11 @@ int main(int argc, char const *argv[])
 		// cada thread repete 150 vezes, hard coded
 		// definido empiricamente
 		string_size = size / (nthreads * 150);
+		//limitando por teto inferior de 50B e superior de 300MB
 		string_size = string_size >= MIN_STRING_SIZE ?
 					  string_size : MIN_STRING_SIZE;
+		string_size = string_size <= MAX_STRING_SIZE ?
+					  string_size : MAX_STRING_SIZE;
 
 		//inicializando variáveis de concorrência
 		pthread_mutex_init(&mutex, NULL);
