@@ -138,7 +138,9 @@ int main(int argc, char const *argv[])
 		size = st.st_size;
 		// cada thread repete 150 vezes, hard coded
 		// definido empiricamente
-		string_size = (int) size / (nthreads * 150);
+		string_size = size / (nthreads * 150);
+		string_size = string_size >= MIN_STRING_SIZE ?
+					  string_size : MIN_STRING_SIZE;
 
 		//inicializando variáveis de concorrência
 		pthread_mutex_init(&mutex, NULL);

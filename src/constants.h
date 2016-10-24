@@ -6,6 +6,7 @@
 #define MIN_ASCII_USING 33
 #define MAX_ASCII_USING 122
 #define BLACKLIST_SIZE 11
+#define MIN_STRING_SIZE 50
 
 static int BLACKLIST[] = {34, 39, 44, 47, 60, 62, 91, 92, 93, 94, 96};
 
