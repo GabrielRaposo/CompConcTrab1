@@ -16,18 +16,16 @@
 #include "util.h"
 #include "timer.h"
 
-#define BUFFER_SIZE 5
+#define STRING_SIZE 50
 
 //variáveis globais
 int nthreads;
 FILE *infile;
 
 //variáveis para implementação produtor/consumidor
-char buffer[BUFFER_SIZE];
-bool file_ended;
-int count_buffer, in, out;
+int count_buffer;
+float inicio, fim, delta;
 pthread_mutex_t mutex;
-pthread_cond_t cond_prod, cond_cons;
 
 /*
 * tabela estilo 'hash' no índice referente ao
@@ -49,69 +47,40 @@ void ocorrencias_caracteres_arquivo(FILE *f, int *ascii_freq){
 	}
 }
 
-void insere(char c) {
-	pthread_mutex_lock(&mutex);
-	while(count_buffer==BUFFER_SIZE){
-		pthread_cond_wait(&cond_prod, &mutex);
-	}
-	count_buffer++;
-	buffer[in] = c;
-	in++;
-	in %= BUFFER_SIZE;
-	pthread_mutex_unlock(&mutex);	
-	pthread_cond_broadcast(&cond_cons);
-}
-
-char retira (void) {
+void * thread_conta_char(void * arg){
+	int tid = *(int *)arg;
+	int i;
 	char c;
-	pthread_mutex_lock(&mutex);
-	while(count_buffer == 0) {
-		if (file_ended) {
-			// printf("entrei na condição final da retira\n");
-			pthread_mutex_unlock(&mutex);
-			return BLACKLIST[0]; // retornando um caracter que não será computado.
-		}
-		// printf("loop retira antes do wait count_buffer=%d\n", count_buffer);
-		pthread_cond_wait(&cond_cons, &mutex);
-		// printf("loop retira depois do wait count_buffer=%d\n", count_buffer);
-	}
-	count_buffer--;
-	c = buffer[out];
-	out++;
-	out %= BUFFER_SIZE;
-	pthread_mutex_unlock(&mutex);
-	pthread_cond_signal(&cond_prod);
-	pthread_cond_broadcast(&cond_cons);
-	return c;
-}
+	char *string_local;
+	bool end = false;
 
-void * thread_produtora(void * arg) {
-	char c;
-	printf("thread_produtora começou\n");
-	while(true) {
-		if((c = fgetc(infile))!=EOF)
-			insere(c);
-		else{
-			file_ended = true;
-			pthread_cond_broadcast(&cond_cons);
-			break;
-		}
-	}
-	printf("saindo da thread_produtora \n");
-	pthread_exit(NULL);
-}
-
-void * thread_consumidora(void * arg) {
-	char c;
-	printf("thread_consumidora começou\n");
-	while(true) {
-		c = retira();
+	string_local = malloc(sizeof(char) * STRING_SIZE);
+	
+	pthread_mutex_lock( &mutex );
+	fgets( string_local, STRING_SIZE+1, infile);
+	//printf("string>>%s pela thread %d \n\n", string_local, tid); 
+	pthread_mutex_unlock( &mutex );
+	
+	while(!end){ 
+		i = 0;
+		c = string_local[i];
 		incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
-		if(file_ended && count_buffer==0){
+
+		while(i < STRING_SIZE && c != '\n'){
+			i++;	
+			c = string_local[i];
+			incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
+		}
+		pthread_mutex_lock( &mutex );
+		if( fgets( string_local, STRING_SIZE+1, infile) == NULL){
+			pthread_mutex_unlock( &mutex );
 			break;
 		}
+		//printf("string>>%s pela thread %d \n\n", string_local, tid); 
+		pthread_mutex_unlock( &mutex );
 	}
-	printf("saindo da thread_consumidora count_buffer: %d \n", count_buffer);
+
+	printf("Sai da thread_conta_char %d\n", tid);
 	pthread_exit(NULL);
 }
 
@@ -122,7 +91,9 @@ int main(int argc, char const *argv[])
 	bool use_threads = false;
 	int size, i;
 
-	pthread_t tid_sist_prod, *tid_sist_cons;
+	pthread_t *tid_sist;
+	
+	GET_TIME(inicio);
 
 	//avaliando argumentos passados
 	if(argc <3){
@@ -143,16 +114,12 @@ int main(int argc, char const *argv[])
 	if(use_threads = (argc > 3)){
 		nthreads=atoi(argv[3]);
 		//inicializando variáveis de concorrência
-		pthread_cond_init(&cond_cons, NULL);
-		pthread_cond_init(&cond_prod, NULL);
 		pthread_mutex_init(&mutex, NULL);
-		count_buffer = in = out = 0;
-		file_ended = false;
 		for (i = 0; i < ASCII_SIZE; ++i)
 		{
 			pthread_mutex_init(&mutex_ascii_freq[i], NULL);
 		}
-		tid_sist_cons = (pthread_t*) malloc(sizeof(pthread_t) * nthreads);
+		tid_sist = (pthread_t*) malloc(sizeof(pthread_t) * nthreads);
 	}
 
 	//Lendo arquivos de entrada e saída
@@ -172,38 +139,34 @@ int main(int argc, char const *argv[])
 
 	//executando problema
 	if(use_threads) {
-		//criando threads
-		if(pthread_create(&tid_sist_prod, NULL, thread_produtora, NULL))
-			error("Erro ao criar thread");
 		for (i = 0; i < nthreads; ++i) {
-			if(pthread_create(&tid_sist_cons[i], NULL, thread_consumidora, NULL))
+			int *tid;
+			tid = (int *)malloc(sizeof(int));
+			*tid = i;
+			if(pthread_create(&tid_sist[i], NULL, thread_conta_char, (void *)tid))
 				error("Erro ao criar thread");
 		}
 
-		//esperando threads terminarem
-		if(pthread_join(tid_sist_prod, NULL))
-			error("Erro ao esperar thread parar.");
 		for (i = 0; i < nthreads; ++i) {
-			if(pthread_join(tid_sist_cons[i], NULL))
+			if(pthread_join(tid_sist[i], NULL))
 				error("Erro ao esperar thread parar.");
 		}
 
-		//alguma outra coisa para juntar resulado, se for necessário
-		pthread_cond_destroy(&cond_cons);
-		pthread_cond_destroy(&cond_prod);
+		//alguma outra coisa para juntar resultado, se for necessário
 		pthread_mutex_destroy(&mutex);
 		for (i = 0; i < ASCII_SIZE; ++i)
 		{
 			pthread_mutex_destroy(&mutex_ascii_freq[i]);
 		}
-		free(tid_sist_cons);
+		free(tid_sist);
 	}
 	else {
 		ocorrencias_caracteres_arquivo(infile, ascii_freq_global);
 	}
 
 	escreve_arquivo_saida(ascii_freq_global, outfile);
-	printf("Frequência de caracteres no arquivo: %s\n", outfile_name);
+	GET_TIME(fim);
+	printf("Frequência de caracteres no arquivo: %s\nTempo total: %f\n", outfile_name, fim - inicio);
 	fclose(infile);
 	fclose(outfile);
 	return 0;
