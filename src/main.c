@@ -60,7 +60,7 @@ void * thread_conta_char(void * arg){
 		// pthread_mutex_unlock(&mutex_end);
 		// ou passa o lock pra dentro do for, testar pela performance depois
 		pthread_mutex_lock( &mutex );
-		for (int i = 0; i < STRING_SIZE; ++i)
+		for (i = 0; i < STRING_SIZE; ++i)
 		{
 			if( (c = fgetc(infile)) == EOF ){
 				pthread_mutex_lock(&mutex_end);
@@ -75,7 +75,7 @@ void * thread_conta_char(void * arg){
 
 		}
 		pthread_mutex_unlock( &mutex );
-		for (int i = 0; (i < STRING_SIZE && c!='\0'); ++i)
+		for (i = 0; (i < STRING_SIZE && c!='\0'); ++i)
 		{
 			c = string_local[i];
 			incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);

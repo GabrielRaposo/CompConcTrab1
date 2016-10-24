@@ -13,14 +13,16 @@ void error(char *msg);
 void inicializa_ascii_freq(int *ascii_freq);
 
 
+bool in_array(int haystack[], int needle, int size);
+
+bool is_valid_char(char c);
+
 /*
 * se o caractere c estiver no universo de caracteres a serem contados,
 * incrementa no índice equivalente de c da tabela ascii_freq
 */
 void incrementa_ocorrencias_char(int *ascii_freq, char c,
                                  pthread_mutex_t mutex_ascii_freq[]);
-
-bool in_array(int arr[], int needle, int size);
 
 /*
 * pega a tabela de frequencia de caracteres e escreve
