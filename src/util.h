@@ -21,8 +21,7 @@ bool is_valid_char(char c);
 * se o caractere c estiver no universo de caracteres a serem contados,
 * incrementa no índice equivalente de c da tabela ascii_freq
 */
-void incrementa_ocorrencias_char(int *ascii_freq, char c,
-                                 pthread_mutex_t mutex_ascii_freq[]);
+void incrementa_ocorrencias_char(int *ascii_freq, char c);
 
 /*
 * pega a tabela de frequencia de caracteres e escreve

@@ -32,17 +32,10 @@ bool is_valid_char(char c){
 	return false;
 }
 
-void incrementa_ocorrencias_char(int *ascii_freq, char c,
-                                 pthread_mutex_t mutex_ascii_freq[]) {
+void incrementa_ocorrencias_char(int *ascii_freq, char c) {
 	int ascii_eq = (int) c; // equivalente da tabela ascii do char c
 	if(is_valid_char(c)) {
-		if(mutex_ascii_freq!=NULL)
-			pthread_mutex_lock(&mutex_ascii_freq[ascii_eq]);
-
 		ascii_freq[ascii_eq]++;
-
-		if(mutex_ascii_freq!=NULL)
-			pthread_mutex_unlock(&mutex_ascii_freq[ascii_eq]);
 	}
 }
 
