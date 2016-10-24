@@ -21,19 +21,13 @@
 //variáveis globais
 int nthreads;
 FILE *infile;
+int ascii_freq_global[ASCII_SIZE];
 
 bool end = false;
 double inicio, fim, delta1, delta2, delta3;
 pthread_mutex_t mutex;
 pthread_mutex_t mutex_end;
-
-/*
-* tabela estilo 'hash' no índice referente ao
-* ascii do caracter estará sua frequencia
-*/
-int ascii_freq_global[ASCII_SIZE];
-//exclusão mútua das posições na tabela
-pthread_mutex_t mutex_ascii_freq[ASCII_SIZE];
+pthread_mutex_t mutex_ascii;
 
 /*
 * versão concorrente da primeira etapa do algoritmo de huffman,
@@ -43,22 +37,21 @@ pthread_mutex_t mutex_ascii_freq[ASCII_SIZE];
 void ocorrencias_caracteres_arquivo(FILE *f, int *ascii_freq){
 	char c;
 	while ((c = fgetc(f)) != EOF){
-		incrementa_ocorrencias_char(ascii_freq, c, NULL);
+		incrementa_ocorrencias_char(ascii_freq, c);
 	}
 }
 
 void * thread_conta_char(void * arg){
 	int tid = *(int *)arg;
 	int i;
+	int ascii_freq_local[ASCII_SIZE];
 	char c;
 	char *string_local;
 
 	string_local = malloc(sizeof(char) * STRING_SIZE);
+	inicializa_ascii_freq(ascii_freq_local);
 	
-	//pthread_mutex_lock(&mutex_end);
 	while(!end) {
-		//pthread_mutex_unlock(&mutex_end);
-		// ou passa o lock pra dentro do for, testar pela performance depois
 		pthread_mutex_lock( &mutex );
 		for (i = 0; (i < STRING_SIZE); ++i)
 		{
@@ -74,16 +67,21 @@ void * thread_conta_char(void * arg){
 			}
 
 		}
-		//printf("libera\n");
 		pthread_mutex_unlock( &mutex );
 		for (i = 0; (i < STRING_SIZE && c!='\0'); ++i)
 		{
 			c = string_local[i];
-			incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
+
+			incrementa_ocorrencias_char(ascii_freq_local, c);
 		}
-		//pthread_mutex_lock(&mutex_end);
 	}
-	//pthread_mutex_unlock(&mutex_end);
+
+	pthread_mutex_lock( &mutex_ascii );
+	for(i = 0; i < ASCII_SIZE; i++){
+		ascii_freq_global[i] += ascii_freq_local[i];
+	}
+	pthread_mutex_unlock( &mutex_ascii );
+
 	printf("Sai da thread_conta_char %d\n", tid);
 	pthread_exit(NULL);
 }
@@ -120,10 +118,7 @@ int main(int argc, char const *argv[])
 		//inicializando variáveis de concorrência
 		pthread_mutex_init(&mutex, NULL);
 		pthread_mutex_init(&mutex_end, NULL);
-		for (i = 0; i < ASCII_SIZE; ++i)
-		{
-			pthread_mutex_init(&mutex_ascii_freq[i], NULL);
-		}
+		pthread_mutex_init(&mutex_ascii, NULL);
 		tid_sist = (pthread_t*) malloc(sizeof(pthread_t) * nthreads);
 	}
 
@@ -140,7 +135,6 @@ int main(int argc, char const *argv[])
 	}
 
 	inicializa_ascii_freq(ascii_freq_global);
-
 
 	//executando problema
 	if(use_threads) {
@@ -162,10 +156,8 @@ int main(int argc, char const *argv[])
 		}
 
 		pthread_mutex_destroy(&mutex);
-		for (i = 0; i < ASCII_SIZE; ++i)
-		{
-			pthread_mutex_destroy(&mutex_ascii_freq[i]);
-		}
+		pthread_mutex_destroy(&mutex_end);
+		pthread_mutex_destroy(&mutex_ascii);
 		free(tid_sist);
 
 		GET_TIME(fim);
