@@ -16,14 +16,14 @@
 #include "util.h"
 #include "timer.h"
 
-#define STRING_SIZE 50
+#define STRING_SIZE 500
 
 //variáveis globais
 int nthreads;
 FILE *infile;
 
 bool end = false;
-double inicio, fim, delta;
+double inicio, fim, delta1, delta2, delta3;
 pthread_mutex_t mutex;
 pthread_mutex_t mutex_end;
 
@@ -55,12 +55,12 @@ void * thread_conta_char(void * arg){
 
 	string_local = malloc(sizeof(char) * STRING_SIZE);
 	
-	// pthread_mutex_lock(&mutex_end);
+	//pthread_mutex_lock(&mutex_end);
 	while(!end) {
-		// pthread_mutex_unlock(&mutex_end);
+		//pthread_mutex_unlock(&mutex_end);
 		// ou passa o lock pra dentro do for, testar pela performance depois
 		pthread_mutex_lock( &mutex );
-		for (i = 0; i < STRING_SIZE; ++i)
+		for (i = 0; (i < STRING_SIZE); ++i)
 		{
 			if( (c = fgetc(infile)) == EOF ){
 				pthread_mutex_lock(&mutex_end);
@@ -74,15 +74,16 @@ void * thread_conta_char(void * arg){
 			}
 
 		}
+		//printf("libera\n");
 		pthread_mutex_unlock( &mutex );
 		for (i = 0; (i < STRING_SIZE && c!='\0'); ++i)
 		{
 			c = string_local[i];
 			incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
 		}
-		// pthread_mutex_lock(&mutex_end);
+		//pthread_mutex_lock(&mutex_end);
 	}
-
+	//pthread_mutex_unlock(&mutex_end);
 	printf("Sai da thread_conta_char %d\n", tid);
 	pthread_exit(NULL);
 }
@@ -143,6 +144,10 @@ int main(int argc, char const *argv[])
 
 	//executando problema
 	if(use_threads) {
+		GET_TIME(fim);
+		delta1 = fim - inicio;
+		GET_TIME(inicio);
+
 		for (i = 0; i < nthreads; ++i) {
 			int *tid;
 			tid = (int *)malloc(sizeof(int));
@@ -156,21 +161,35 @@ int main(int argc, char const *argv[])
 				error("Erro ao esperar thread parar.");
 		}
 
-		//alguma outra coisa para juntar resultado, se for necessário
 		pthread_mutex_destroy(&mutex);
 		for (i = 0; i < ASCII_SIZE; ++i)
 		{
 			pthread_mutex_destroy(&mutex_ascii_freq[i]);
 		}
 		free(tid_sist);
+
+		GET_TIME(fim);
+		delta2 = fim - inicio;
+		GET_TIME(inicio);
 	}
 	else {
 		ocorrencias_caracteres_arquivo(infile, ascii_freq_global);
 	}
 
 	escreve_arquivo_saida(ascii_freq_global, outfile);
+
 	GET_TIME(fim);
-	printf("Frequência de caracteres no arquivo: %s\nTempo total: %f\n", outfile_name, fim - inicio);
+	delta3 = fim - inicio;
+
+	if(use_threads){ 
+		printf("\n\nFrequência de caracteres no arquivo: %s\nTempo sequencial 1: %f\nTempo concorrente: %f\nTempo sequencial 2: %f\nTempo total: %f\n\n", 
+			outfile_name, 
+			delta1, delta2, delta3, 
+			delta1 + delta2 + delta3);
+	}
+	else		
+		printf("\n\nFrequência de caracteres no arquivo: %s\nTempo total: %f\n\n", outfile_name, delta3);
+	
 	fclose(infile);
 	fclose(outfile);
 	return 0;
