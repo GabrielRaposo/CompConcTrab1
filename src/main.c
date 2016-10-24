@@ -22,10 +22,10 @@
 int nthreads;
 FILE *infile;
 
-//variáveis para implementação produtor/consumidor
-int count_buffer;
-float inicio, fim, delta;
+bool end = false;
+double inicio, fim, delta;
 pthread_mutex_t mutex;
+pthread_mutex_t mutex_end;
 
 /*
 * tabela estilo 'hash' no índice referente ao
@@ -52,32 +52,35 @@ void * thread_conta_char(void * arg){
 	int i;
 	char c;
 	char *string_local;
-	bool end = false;
 
 	string_local = malloc(sizeof(char) * STRING_SIZE);
 	
-	pthread_mutex_lock( &mutex );
-	fgets( string_local, STRING_SIZE+1, infile);
-	//printf("string>>%s pela thread %d \n\n", string_local, tid); 
-	pthread_mutex_unlock( &mutex );
-	
-	while(!end){ 
-		i = 0;
-		c = string_local[i];
-		incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
+	// pthread_mutex_lock(&mutex_end);
+	while(!end) {
+		// pthread_mutex_unlock(&mutex_end);
+		// ou passa o lock pra dentro do for, testar pela performance depois
+		pthread_mutex_lock( &mutex );
+		for (int i = 0; i < STRING_SIZE; ++i)
+		{
+			if( (c = fgetc(infile)) == EOF ){
+				pthread_mutex_lock(&mutex_end);
+				end = true;
+				pthread_mutex_unlock(&mutex_end);
+				string_local[i] = '\0'; // null terminator
+				break;
+			}
+			else{
+				string_local[i] = c;
+			}
 
-		while(i < STRING_SIZE && c != '\n'){
-			i++;	
+		}
+		pthread_mutex_unlock( &mutex );
+		for (int i = 0; (i < STRING_SIZE && c!='\0'); ++i)
+		{
 			c = string_local[i];
 			incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
 		}
-		pthread_mutex_lock( &mutex );
-		if( fgets( string_local, STRING_SIZE+1, infile) == NULL){
-			pthread_mutex_unlock( &mutex );
-			break;
-		}
-		//printf("string>>%s pela thread %d \n\n", string_local, tid); 
-		pthread_mutex_unlock( &mutex );
+		// pthread_mutex_lock(&mutex_end);
 	}
 
 	printf("Sai da thread_conta_char %d\n", tid);
@@ -115,6 +118,7 @@ int main(int argc, char const *argv[])
 		nthreads=atoi(argv[3]);
 		//inicializando variáveis de concorrência
 		pthread_mutex_init(&mutex, NULL);
+		pthread_mutex_init(&mutex_end, NULL);
 		for (i = 0; i < ASCII_SIZE; ++i)
 		{
 			pthread_mutex_init(&mutex_ascii_freq[i], NULL);
