@@ -12,14 +12,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "constants.h"
 #include "util.h"
 #include "timer.h"
 
-#define STRING_SIZE 500
-
 //variáveis globais
 int nthreads;
+int string_size = 500;
 FILE *infile;
 
 bool end = false;
@@ -53,14 +53,15 @@ void * thread_conta_char(void * arg){
 	char c;
 	char *string_local;
 
-	string_local = malloc(sizeof(char) * STRING_SIZE);
+	string_local = malloc(sizeof(char) * string_size);
 	
 	//pthread_mutex_lock(&mutex_end);
 	while(!end) {
+		// printf("\t\trepeti 1 vez\n");
 		//pthread_mutex_unlock(&mutex_end);
 		// ou passa o lock pra dentro do for, testar pela performance depois
 		pthread_mutex_lock( &mutex );
-		for (i = 0; (i < STRING_SIZE); ++i)
+		for (i = 0; (i < string_size); ++i)
 		{
 			if( (c = fgetc(infile)) == EOF ){
 				pthread_mutex_lock(&mutex_end);
@@ -76,7 +77,7 @@ void * thread_conta_char(void * arg){
 		}
 		//printf("libera\n");
 		pthread_mutex_unlock( &mutex );
-		for (i = 0; (i < STRING_SIZE && c!='\0'); ++i)
+		for (i = 0; (i < string_size && c!='\0'); ++i)
 		{
 			c = string_local[i];
 			incrementa_ocorrencias_char(ascii_freq_global, c, mutex_ascii_freq);
@@ -94,6 +95,7 @@ int main(int argc, char const *argv[])
 	char *infile_name, *outfile_name;
 	bool use_threads = false;
 	int size, i;
+	struct stat st;
 
 	pthread_t *tid_sist;
 	
@@ -117,6 +119,12 @@ int main(int argc, char const *argv[])
 
 	if(use_threads = (argc > 3)){
 		nthreads=atoi(argv[3]);
+		stat(infile_name, &st);
+		size = st.st_size;
+		// cada thread repete 4 vezes, hard coded
+		// definido empiricamente
+		string_size = (int) size / (nthreads * 150);
+
 		//inicializando variáveis de concorrência
 		pthread_mutex_init(&mutex, NULL);
 		pthread_mutex_init(&mutex_end, NULL);
