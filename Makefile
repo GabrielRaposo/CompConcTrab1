@@ -1,5 +1,5 @@
 install: src/main.c src/constants.h src/timer.h src/util.h
-	gcc src/main.c src/util.c -lpthread -Wall -o huffman.out
+	gcc src/main.c src/util.c -lpthread -Wall -D_FILE_OFFSET_BITS=64 -o huffman.out
 
 clean:
 	rm *.out

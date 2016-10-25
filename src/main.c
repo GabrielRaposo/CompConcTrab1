@@ -12,14 +12,23 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define __USE_LARGEFILE64
+#define _LARGEFILE_SOURCE
+#define _LARGEFILE64_SOURCE
 #include <sys/stat.h>
+
+#if __WIN32__
+#define stat64 _stat64
+#endif
+
 #include "constants.h"
 #include "util.h"
 #include "timer.h"
 
 //variáveis globais
 int nthreads;
-int string_size = 500;
+unsigned long long int string_size = 500;
 FILE *infile;
 /*
 * tabela estilo 'hash' no índice referente ao
@@ -107,8 +116,9 @@ int main(int argc, char const *argv[])
 	FILE *outfile;
 	char *infile_name, *outfile_name;
 	bool use_threads = false;
-	int size, i;
-	struct stat st;
+	int i;
+	unsigned long long int size;
+	struct stat64 st;
 
 	pthread_t *tid_sist;
 	
@@ -132,7 +142,7 @@ int main(int argc, char const *argv[])
 
 	if(use_threads = (argc > 3)){
 		nthreads=atoi(argv[3]);
-		if(stat(infile_name, &st))
+		if(stat64(infile_name, &st))
 			error("Falha ao tentar ler tamanho do arquivo de entrada");
 		size = st.st_size;
 		// cada thread repete 150 vezes, hard coded
@@ -144,6 +154,9 @@ int main(int argc, char const *argv[])
 		string_size = string_size <= MAX_STRING_SIZE ?
 					  string_size : MAX_STRING_SIZE;
 
+
+	  	printf("string_size: %llu\n", string_size);
+	  	printf("file size: %llu\n", size);
 		//inicializando variáveis de concorrência
 		pthread_mutex_init(&mutex, NULL);
 		pthread_mutex_init(&mutex_end, NULL);
