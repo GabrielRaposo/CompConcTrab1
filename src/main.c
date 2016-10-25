@@ -57,6 +57,7 @@ void ocorrencias_caracteres_arquivo(FILE *f, int *ascii_freq){
 void * thread_conta_char(void * arg){
 	int tid = *(int *)arg;
 	int i;
+	long long unsigned int buffer_size;
 	int ascii_freq_local[ASCII_SIZE];
 	char c;
 	char *string_local;
@@ -70,24 +71,16 @@ void * thread_conta_char(void * arg){
 
 		//lendo arquivo
 		pthread_mutex_lock( &mutex_file );
-		for (i = 0; (i < string_size); ++i)
-		{
-			if( (c = fgetc(infile)) == EOF ){
-				pthread_mutex_lock(&mutex_end);
-				end = true;
-				pthread_mutex_unlock(&mutex_end);
-				string_local[i] = '\0'; // null terminator
-				break;
-			}
-			else
-				string_local[i] = c;
-
+		buffer_size = fread(string_local, sizeof(char), string_size, infile);
+		if(buffer_size != string_size){
+			pthread_mutex_lock(&mutex_end);
+			end = true;
+			pthread_mutex_unlock(&mutex_end);
 		}
 		pthread_mutex_unlock( &mutex_file );
 
 		//processando string local lida
-		c = string_local[0];
-		for (i = 0; (i < string_size && c!='\0'); ++i)
+		for (i = 0; (i < buffer_size); ++i)
 		{
 			c = string_local[i];
 			incrementa_ocorrencias_char(ascii_freq_local, c);
@@ -103,7 +96,7 @@ void * thread_conta_char(void * arg){
 	for(i = 0; i < ASCII_SIZE; i++){
 		ascii_freq_global[i] += ascii_freq_local[i];
 	}
-	pthread_mutex_unlock( &mutex_ascii );
+	pthread_mutex_unlock(&mutex_ascii);
 
 	printf("Sai da thread_conta_char %d\n", tid);
 	free(arg);
@@ -126,8 +119,7 @@ int main(int argc, char const *argv[])
 
 	//avaliando argumentos passados
 	if(argc <3){
-		printf("Use ./%s <infile> <outfile> <nthreads|opcional>\n",
-			argv[0]);
+		printf("Use ./%s <infile> <outfile> <nthreads|opcional>\n", argv[0]);
 		error(NULL);
 	}
 
@@ -140,6 +132,7 @@ int main(int argc, char const *argv[])
 	strncpy(infile_name,  argv[1], strlen(argv[1]));
 	strncpy(outfile_name, argv[2], strlen(argv[2]));
 
+	//avaliando os argumentos no caso de um número de threads ser passado
 	if(use_threads = (argc > 3)){
 		nthreads=atoi(argv[3]);
 		if(stat64(infile_name, &st))
@@ -150,13 +143,13 @@ int main(int argc, char const *argv[])
 		string_size = size / (nthreads * 150);
 
 		//limitando por teto inferior de 50B e superior de 300MB
-		//aqui estamos pensando em RAM, por isso o máximo 300MB
+		//aqui estamos pensando em RAM, por isso o máximo 300MB (cada thread)
 		string_size = llu_max(MIN_STRING_SIZE, string_size);
 		string_size = llu_min(MAX_STRING_SIZE, string_size);
 
-
 	  	printf("string_size: %llu\n", string_size);
 	  	printf("file size: %llu\n", size);
+
 		//inicializando variáveis de concorrência
 		pthread_mutex_init(&mutex_file, NULL);
 		pthread_mutex_init(&mutex_end, NULL);
@@ -184,6 +177,7 @@ int main(int argc, char const *argv[])
 		delta1 = fim - inicio;
 		GET_TIME(inicio);
 
+		//criando threads
 		for (i = 0; i < nthreads; ++i) {
 			int *tid;
 			tid = (int *)malloc(sizeof(int));
@@ -193,19 +187,21 @@ int main(int argc, char const *argv[])
 				error("Erro ao criar thread");
 		}
 
+		//esperando threads terminarem
 		for (i = 0; i < nthreads; ++i) {
 			if(pthread_join(tid_sist[i], NULL))
 				error("Erro ao esperar thread parar.");
 		}
 
+		//calculando tempo de execução concorrente
+		GET_TIME(fim);
+		delta2 = fim - inicio;
+		GET_TIME(inicio);
+
 		pthread_mutex_destroy(&mutex_file);
 		pthread_mutex_destroy(&mutex_end);
 		pthread_mutex_destroy(&mutex_ascii);
 		free(tid_sist);
-
-		GET_TIME(fim);
-		delta2 = fim - inicio;
-		GET_TIME(inicio);
 	}
 	else {
 		ocorrencias_caracteres_arquivo(infile, ascii_freq_global);
@@ -220,6 +216,9 @@ int main(int argc, char const *argv[])
 	delta3 = fim - inicio;
 
 	printf("\n\nFrequência de caracteres no arquivo: %s\n", outfile_name);
+	
+	free(infile_name);
+	free(outfile_name);
 	if(use_threads){ 
 		printf("Tempo sequencial 1: %f\n", delta1);
 		printf("Tempo concorrente: %f\n", delta2);
