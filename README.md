@@ -16,15 +16,8 @@ Trabalho: primeira etapa algoritmo de Huffman
 * `make test` para testar a aplicação
 * `make install` para compilar para o arquivo: `huffman.out`
 * `./huffman.out dados/ricardo_reis.txt saida.csv` ou qualquer outro arquivo para executar
-* `make clean` para remover os arquivos .out e .csv que estiverem ocupando espaço whatever
-
-## Pendências
-
-* usar tomadas de tempo
-* gerar arquivos grandes para testar se está tudo ok
-* fazer a parte concorrente
-* refactors e avaliação do código
-* fazer relatório
+* `make clean` para remover os arquivos .out e .csv que estiverem ocupando espaço
+* `make teste-concorrente t=4` para testar a corretude do problema com 4 threads
  
 ```
 _____________¶¶¶¶¶¶¶
