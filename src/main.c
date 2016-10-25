@@ -213,19 +213,21 @@ int main(int argc, char const *argv[])
 
 	escreve_arquivo_saida(ascii_freq_global, outfile);
 
+	fclose(infile);
+	fclose(outfile);
+	
 	GET_TIME(fim);
 	delta3 = fim - inicio;
 
+	printf("\n\nFrequência de caracteres no arquivo: %s\n", outfile_name);
 	if(use_threads){ 
-		printf("\n\nFrequência de caracteres no arquivo: %s\nTempo sequencial 1: %f\nTempo concorrente: %f\nTempo sequencial 2: %f\nTempo total: %f\n\n", 
-			outfile_name, 
-			delta1, delta2, delta3, 
-			delta1 + delta2 + delta3);
+		printf("Tempo sequencial 1: %f\n", delta1);
+		printf("Tempo concorrente: %f\n", delta2);
+		printf("Tempo sequencial 2: %f\n", delta3);
+		printf("Tempo total: %f\n\n", delta1 + delta2 + delta3);
 	}
 	else		
-		printf("\n\nFrequência de caracteres no arquivo: %s\nTempo total: %f\n\n", outfile_name, delta3);
+		printf("Tempo total: %f\n\n", delta3);
 	
-	fclose(infile);
-	fclose(outfile);
 	return 0;
 }
