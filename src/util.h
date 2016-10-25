@@ -29,4 +29,10 @@ void incrementa_ocorrencias_char(int *ascii_freq, char c);
 */
 void escreve_arquivo_saida(int *ascii_freq, FILE *f);
 
+long long unsigned int llu_min(long long unsigned int a,
+                               long long unsigned int b);
+
+long long unsigned int llu_max(long long unsigned int a,
+                               long long unsigned int b);
+
 #endif

@@ -1,6 +1,5 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
-// #include <limits.h>
 
 #define ASCII_SIZE 122
 #define MIN_ASCII_USING 33

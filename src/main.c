@@ -38,7 +38,7 @@ int ascii_freq_global[ASCII_SIZE];
 
 bool end = false;
 double inicio, fim, delta1, delta2, delta3;
-pthread_mutex_t mutex;
+pthread_mutex_t mutex_file;
 pthread_mutex_t mutex_end;
 pthread_mutex_t mutex_ascii;
 
@@ -69,7 +69,7 @@ void * thread_conta_char(void * arg){
 		pthread_mutex_unlock(&mutex_end);
 
 		//lendo arquivo
-		pthread_mutex_lock( &mutex );
+		pthread_mutex_lock( &mutex_file );
 		for (i = 0; (i < string_size); ++i)
 		{
 			if( (c = fgetc(infile)) == EOF ){
@@ -83,7 +83,7 @@ void * thread_conta_char(void * arg){
 				string_local[i] = c;
 
 		}
-		pthread_mutex_unlock( &mutex );
+		pthread_mutex_unlock( &mutex_file );
 
 		//processando string local lida
 		c = string_local[0];
@@ -146,19 +146,19 @@ int main(int argc, char const *argv[])
 			error("Falha ao tentar ler tamanho do arquivo de entrada");
 		size = st.st_size;
 		// cada thread repete 150 vezes, hard coded
-		// definido empiricamente
+		// definido empiricamente testando com arquivos grandes
 		string_size = size / (nthreads * 150);
+
 		//limitando por teto inferior de 50B e superior de 300MB
-		string_size = string_size >= MIN_STRING_SIZE ?
-					  string_size : MIN_STRING_SIZE;
-		string_size = string_size <= MAX_STRING_SIZE ?
-					  string_size : MAX_STRING_SIZE;
+		//aqui estamos pensando em RAM, por isso o máximo 300MB
+		string_size = llu_max(MIN_STRING_SIZE, string_size);
+		string_size = llu_min(MAX_STRING_SIZE, string_size);
 
 
 	  	printf("string_size: %llu\n", string_size);
 	  	printf("file size: %llu\n", size);
 		//inicializando variáveis de concorrência
-		pthread_mutex_init(&mutex, NULL);
+		pthread_mutex_init(&mutex_file, NULL);
 		pthread_mutex_init(&mutex_end, NULL);
 		pthread_mutex_init(&mutex_ascii, NULL);
 		tid_sist = (pthread_t*) malloc(sizeof(pthread_t) * nthreads);
@@ -198,7 +198,7 @@ int main(int argc, char const *argv[])
 				error("Erro ao esperar thread parar.");
 		}
 
-		pthread_mutex_destroy(&mutex);
+		pthread_mutex_destroy(&mutex_file);
 		pthread_mutex_destroy(&mutex_end);
 		pthread_mutex_destroy(&mutex_ascii);
 		free(tid_sist);

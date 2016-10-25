@@ -48,3 +48,11 @@ void escreve_arquivo_saida(int *ascii_freq, FILE *f) {
 			fprintf(f, "%c, %d\n", i, ascii_freq[i]);
 	}
 }
+
+long long unsigned int llu_min(long long unsigned int a, long long unsigned int b){
+	return a < b? a : b;
+}
+
+long long unsigned int llu_max(long long unsigned int a, long long unsigned int b){
+	return a > b? a : b;
+}
